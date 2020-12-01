@@ -95,6 +95,7 @@ ENV SHARELATEX_APP_NAME "Overleaf Community Edition"
 
 ENV OPTIMISE_PDF "true"
 
+RUN tlmgr install scheme-full
 
 EXPOSE 80
 
