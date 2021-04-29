@@ -37,7 +37,7 @@ settings =
 	# Databases
 	# ---------
 
-	# ShareLaTeX's main persistant data store is MongoDB (http://www.mongodb.org/)
+	# ShareLaTeX's main persistent data store is MongoDB (http://www.mongodb.org/)
 	# Documentation about the URL connection string format can be found at:
 	#
 	#    http://docs.mongodb.org/manual/reference/connection-string/
@@ -75,7 +75,7 @@ settings =
 				# track-changes:lock
 				historyLock: ({doc_id}) -> "HistoryLock:#{doc_id}"
 				historyIndexLock: ({project_id}) -> "HistoryIndexLock:#{project_id}"
-				# track-chanegs:history
+				# track-changes:history
 				uncompressedHistoryOps: ({doc_id}) -> "UncompressedHistoryOps:#{doc_id}"
 				docsWithHistoryOps: ({project_id}) -> "DocsWithHistoryOps:#{project_id}"
 				# realtime
@@ -93,8 +93,8 @@ settings =
 		project_history: redisConfig
 
 	# The compile server (the clsi) uses a SQL database to cache files and
-	# meta-data. sqllite is the default, and the load is low enough that this will
-	# be fine in production (we use sqllite at sharelatex.com).
+	# meta-data. sqlite is the default, and the load is low enough that this will
+	# be fine in production (we use sqlite at sharelatex.com).
 	#
 	# If you want to configure a different database, see the Sequelize documentation
 	# for available options:
@@ -148,6 +148,8 @@ settings =
 		compilesDir:  Path.join(DATA_DIR, "compiles")
 		# Where to cache downloaded URLs for the CLSI
 		clsiCacheDir: Path.join(DATA_DIR, "cache")
+		# Where to write the output files to disk after running LaTeX
+		outputDir:  Path.join(DATA_DIR, "output")
 
 	# Server Config
 	# -------------
@@ -223,7 +225,7 @@ settings =
 		templates: true
 		references: true
 
-## OPTIONAL CONFIGERABLE SETTINGS
+## OPTIONAL CONFIGURABLE SETTINGS
 
 if process.env["SHARELATEX_LEFT_FOOTER"]?
 	try
@@ -285,10 +287,15 @@ if process.env["SHARELATEX_EMAIL_FROM_ADDRESS"]?
 			port: process.env["SHARELATEX_EMAIL_SMTP_PORT"],
 			secure: parse(process.env["SHARELATEX_EMAIL_SMTP_SECURE"])
 			ignoreTLS: parse(process.env["SHARELATEX_EMAIL_SMTP_IGNORE_TLS"])
+			name: process.env["SHARELATEX_EMAIL_SMTP_NAME"]
+			logger: process.env["SHARELATEX_EMAIL_SMTP_LOGGER"] == 'true'
 
 		textEncoding:  process.env["SHARELATEX_EMAIL_TEXT_ENCODING"]
 		template:
 			customFooter: process.env["SHARELATEX_CUSTOM_EMAIL_FOOTER"]
+
+	if process.env["SHARELATEX_EMAIL_AWS_SES_REGION"]?
+		settings.email.parameters.region = process.env["SHARELATEX_EMAIL_AWS_SES_REGION"]
 
 	if process.env["SHARELATEX_EMAIL_SMTP_USER"]? or process.env["SHARELATEX_EMAIL_SMTP_PASS"]?
 		settings.email.parameters.auth =
@@ -421,7 +428,7 @@ if process.env["SHARELATEX_LDAP_URL"]
 
 
 if process.env["SHARELATEX_SAML_ENTRYPOINT"]
-	# NOTE: see https://github.com/bergie/passport-saml/blob/master/README.md for docs of `server` options
+	# NOTE: see https://github.com/node-saml/passport-saml/blob/master/README.md for docs of `server` options
 	settings.externalAuth = true
 	settings.saml =
 		updateUserDetailsOnLogin: process.env["SHARELATEX_SAML_UPDATE_USER_DETAILS_ON_LOGIN"] == 'true'
@@ -435,6 +442,7 @@ if process.env["SHARELATEX_SAML_ENTRYPOINT"]
 			callbackUrl: process.env["SHARELATEX_SAML_CALLBACK_URL"]
 			issuer: process.env["SHARELATEX_SAML_ISSUER"]
 			decryptionPvk: process.env["SHARELATEX_SAML_DECRYPTION_PVK"]
+			decryptionCert: process.env["SHARELATEX_SAML_DECRYPTION_CERT"]
 			signatureAlgorithm: process.env["SHARELATEX_SAML_SIGNATURE_ALGORITHM"]
 			identifierFormat: process.env["SHARELATEX_SAML_IDENTIFIER_FORMAT"]
 			attributeConsumingServiceIndex: process.env["SHARELATEX_SAML_ATTRIBUTE_CONSUMING_SERVICE_INDEX"]
@@ -457,7 +465,7 @@ if process.env["SHARELATEX_SAML_ENTRYPOINT"]
 					undefined
 			)
 			requestIdExpirationPeriodMs: (
-				if _saml_exiration = process.env["SHARELATEX_SAML_REQUEST_ID_EXPIRATION_PERIOD_MS"]
+				if _saml_expiration = process.env["SHARELATEX_SAML_REQUEST_ID_EXPIRATION_PERIOD_MS"]
 					try
 						parseIntOrFail(_saml_expiration)
 					catch e
@@ -494,7 +502,7 @@ if process.env["SHARELATEX_SAML_ENTRYPOINT"]
 			)
 
 	# SHARELATEX_SAML_CERT cannot be empty
-	# https://github.com/bergie/passport-saml/commit/f6b1c885c0717f1083c664345556b535f217c102
+	# https://github.com/node-saml/passport-saml/commit/f6b1c885c0717f1083c664345556b535f217c102
 	if process.env["SHARELATEX_SAML_CERT"]
 		settings.saml.server.cert = process.env["SHARELATEX_SAML_CERT"]
 		settings.saml.server.privateCert = process.env["SHARELATEX_SAML_PRIVATE_CERT"]
@@ -566,4 +574,3 @@ https = require('https')
 https.globalAgent.maxSockets = 300
 
 module.exports = settings
-

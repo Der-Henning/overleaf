@@ -58,7 +58,7 @@ RUN cd /var/www/sharelatex \
 RUN cd /var/www/sharelatex \
 &&    bash ./bin/compile-services
 
-# Links CLSI sycntex to its default location
+# Links CLSI synctex to its default location
 # ------------------------------------------
 RUN ln -s /var/www/sharelatex/clsi/bin/synctex /opt/synctex
 
@@ -70,13 +70,14 @@ ADD ${baseDir}/runit /etc/service
 
 # Configure nginx
 # ---------------
-ADD ${baseDir}/nginx/nginx.conf /etc/nginx/nginx.conf
+ADD ${baseDir}/nginx/nginx.conf.template /etc/nginx/templates/nginx.conf.template
 ADD ${baseDir}/nginx/sharelatex.conf /etc/nginx/sites-enabled/sharelatex.conf
 
 
 # Configure log rotation
 # ----------------------
 ADD ${baseDir}/logrotate/sharelatex /etc/logrotate.d/sharelatex
+RUN chmod 644 /etc/logrotate.d/sharelatex
 
 
 # Copy Phusion Image startup scripts to its location
