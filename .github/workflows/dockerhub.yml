@@ -31,7 +31,7 @@ jobs:
           context: .
           push: false
           file: ./Dockerfile-base
-          tags: sharelatex/sharelatex-base:latest
+          tags: derhenning/sharelatex-base:latest
       -
         name: Build and push
         uses: docker/build-push-action@v2
