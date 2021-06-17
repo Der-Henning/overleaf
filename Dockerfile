@@ -3,7 +3,7 @@
 # ---------------------------------------------
 
 #ARG SHARELATEX_BASE_TAG=sharelatex/sharelatex-base:latest
-FROM sharelatex/sharelatex-base:latest
+FROM derhenning/sharelatex-base:latest
 
 ENV SHARELATEX_CONFIG /etc/sharelatex/settings.coffee
 
