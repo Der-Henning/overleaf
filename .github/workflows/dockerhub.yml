@@ -29,11 +29,13 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          push: false
+          push: true
           file: ./Dockerfile-base
           tags: derhenning/sharelatex-base:latest
-      - run: docker image ls
-      - name: build
-        run: docker build -t derhenning/sharelatex:latest .
-      - name: push
-        run: docker push derhenning/sharelatex:latest
+      -
+        name: Build Image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: derhenning/sharelatex:latest
