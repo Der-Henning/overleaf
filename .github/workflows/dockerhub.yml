@@ -3,7 +3,9 @@ name: build docker image
 on:
   push:
     branches:
-      - 'master'
+      - master
+    tags:
+      - v*
 
 jobs:
   docker:
@@ -12,6 +14,13 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
+      -
+        name: Set Release Tag
+        run: |
+            if [ "${GITHUB_REF#refs/*/}" = "master" ]; \
+            then echo "RELEASE_TAG=latest"; \
+            else echo "RELEASE_TAG=${GITHUB_REF#refs/*/}"; fi \
+            >> $GITHUB_ENV
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -38,4 +47,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: derhenning/sharelatex:latest
+          tags: derhenning/sharelatex:${RELEASE_TAG}
